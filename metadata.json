@@ -1,6 +1,5 @@
 {
-  "name": "Cursor Community",
-  "description": "Cursor community meetups, hackathons, and workshops taking place around the world.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "name": "Growix",
+  "description": "AI-powered business growth advisor for Ethiopian entrepreneurs.",
+  "requestFramePermissions": []
 }
