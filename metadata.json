@@ -1,0 +1,6 @@
+{
+  "name": "Cursor Community",
+  "description": "Cursor community meetups, hackathons, and workshops taking place around the world.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
