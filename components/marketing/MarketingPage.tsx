@@ -470,6 +470,7 @@ function PlanSheet({
   };
 
   function handleContentUpdate(nextContent: string, nextTitle?: string) {
+    if (!plan) return;
     setContent(nextContent);
     setContentVersion((current) => current + 1);
     onPlanUpdate(plan.id, {
