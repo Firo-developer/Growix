@@ -370,7 +370,7 @@ function NotificationsTab() {
         <SectionLabel>Platform Notifications</SectionLabel>
         <DCard padding="none" className="divide-y divide-border/60">
           {[
-            {key: 'productUpdates' as const, icon: 'star2', label: 'Product Updates', desc: 'Be the first to know about new EthioGrowth AI features and improvements.'},
+            {key: 'productUpdates' as const, icon: 'star2', label: 'Product Updates', desc: 'Be the first to know about new Growix features and improvements.'},
             {key: 'marketingTips' as const, icon: 'discover', label: 'Marketing Tips', desc: 'Occasional tips on growing your Ethiopian business with digital marketing.'},
           ].map(({key, icon, label, desc}) => (
             <SettingRow
@@ -665,7 +665,7 @@ function AdvancedTab() {
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-4">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-card text-[#28745d] dark:bg-card dark:text-[#76c9a6]"><Icon name="ai-send-message" size={19} /></span>
-              <div><p className="text-base font-semibold text-heading">Company information for EthioGrowth AI</p><p className="mt-1 max-w-xl text-sm leading-6 text-text">Your company profile, customers, goals, brand voice, and channels give every AI recommendation the right context.</p></div>
+              <div><p className="text-base font-semibold text-heading">Company information for Growix</p><p className="mt-1 max-w-xl text-sm leading-6 text-text">Your company profile, customers, goals, brand voice, and channels give every AI recommendation the right context.</p></div>
             </div>
             <Button variant="dark" size="sm" className="shrink-0" onClick={() => setContextOpen(true)}><Icon name="document-text" size={14} />Review context</Button>
           </div>
@@ -697,7 +697,7 @@ function AdvancedTab() {
           <SettingRow
             icon="document-text"
             label="Privacy Policy"
-            description="Read how EthioGrowth AI collects and uses your data."
+            description="Read how Growix collects and uses your data."
             action={
               <Button variant="ghost" size="sm">
                 <Icon name="arrow-right3" size={13} className="opacity-50" />
@@ -708,7 +708,7 @@ function AdvancedTab() {
           <SettingRow
             icon="shield"
             label="Terms of Service"
-            description="Review your agreement with EthioGrowth AI."
+            description="Review your agreement with Growix."
             action={
               <Button variant="ghost" size="sm">
                 <Icon name="arrow-right3" size={13} className="opacity-50" />
@@ -738,7 +738,7 @@ function AdvancedTab() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-red-500">Delete Account</p>
                 <p className="text-xs text-muted mt-0.5 leading-relaxed">
-                  Permanently delete your EthioGrowth AI account and all associated data. This action cannot be undone.
+                  Permanently delete your Growix account and all associated data. This action cannot be undone.
                 </p>
 
                 <AnimatePresence>
@@ -802,7 +802,7 @@ function AdvancedTab() {
           </div>
         </DCard>
       </section>
-      <Modal open={contextOpen} onOpenChange={setContextOpen} title="AI company context" description="This is the company information EthioGrowth AI uses to make its guidance specific to your business." icon={<Icon name="ai-send-message" size={18} className="text-heading" />} hideFooter className="max-w-[980px] max-h-[calc(100dvh-2rem)] overflow-y-auto">
+      <Modal open={contextOpen} onOpenChange={setContextOpen} title="AI company context" description="This is the company information Growix uses to make its guidance specific to your business." icon={<Icon name="ai-send-message" size={18} className="text-heading" />} hideFooter className="max-w-[980px] max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
           <aside className="rounded-2xl border border-border/60 bg-gray/45 p-5"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-card text-[#28745d]"><Icon name="ai-homepage" size={20} /></span><p className="mt-5 text-base font-semibold text-heading">Selam Coffee House</p><p className="mt-1 text-sm text-muted">Specialty coffee cafe in Bole, Addis Ababa</p><div className="mt-6 space-y-3 border-t border-border/60 pt-5"><div><p className="text-xs text-muted">Context status</p><p className="mt-1 text-sm font-semibold text-emerald-600 dark:text-emerald-400">Active for AI work</p></div><div><p className="text-xs text-muted">Profile completeness</p><p className="mt-1 text-sm font-semibold text-heading">80% complete</p></div><div><p className="text-xs text-muted">Used in</p><p className="mt-1 text-sm leading-6 text-heading">Plans, campaigns, content, targeting, and recommendations</p></div></div></aside>
           <div className="space-y-4"><div className="rounded-2xl border border-[#c9ded4] bg-[#edf4f0] p-4 dark:border-[#2c4a3d] dark:bg-[#17261f]"><p className="text-sm font-semibold text-heading">How the AI uses this</p><p className="mt-1 text-sm leading-6 text-text">The assistant uses your audience, goals, offer, tone, and operating context to avoid generic answers and suggest work that fits this company.</p></div><div className="grid gap-3 sm:grid-cols-2">{[{icon: 'ai-homepage', title: 'Business profile', items: ['Selam Coffee House', 'Specialty Coffee Cafe', 'Bole, Addis Ababa', '2-5 years in business']}, {icon: 'archive-add', title: 'Products and services', items: ['Single-origin coffee and pastries', 'Catering and delivery', 'Direct farmer sourcing']}, {icon: 'gps', title: 'Target customers', items: ['Urban professionals, age 25-35', 'Addis Ababa and online', 'Mid-market, quality-focused']}, {icon: 'status-up', title: 'Business direction', items: ['Grow repeat customers', 'Improve brand awareness', 'Expand online presence']}, {icon: 'sound', title: 'Brand identity', items: ['Warm and authentic voice', 'Community-focused personality', 'English and Amharic']}, {icon: 'global', title: 'Marketing context', items: ['Instagram, Facebook, Telegram', 'ETB 5,000-15,000 monthly budget', 'Loyalty campaign in progress']}].map((group) => <section key={group.title} className="rounded-2xl border border-border/60 bg-card p-4"><div className="flex items-center gap-2.5"><span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray text-muted"><Icon name={group.icon} size={15} /></span><h3 className="text-sm font-semibold text-heading">{group.title}</h3></div><ul className="mt-4 space-y-2">{group.items.map((item) => <li key={item} className="flex gap-2 text-xs leading-5 text-text"><span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[#4e9b7a]" />{item}</li>)}</ul></section>)}</div></div>

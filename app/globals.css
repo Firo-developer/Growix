@@ -132,6 +132,45 @@ body {
   animation: fadeInUp 0.4s ease-out forwards;
 }
 
+@keyframes sheet-chat-border-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sheet-chat-generating-border {
+  position: relative;
+  isolation: isolate;
+  padding: 1.5px;
+  overflow: hidden;
+}
+
+.sheet-chat-generating-border::before {
+  content: '';
+  position: absolute;
+  inset: -120%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--color-heading) 12%, transparent) 35deg,
+    var(--color-heading) 105deg,
+    color-mix(in srgb, var(--color-muted) 70%, var(--color-heading)) 175deg,
+    transparent 245deg,
+    color-mix(in srgb, var(--color-heading) 18%, transparent) 310deg,
+    transparent 360deg
+  );
+  animation: sheet-chat-border-spin 2.4s linear infinite;
+  z-index: 0;
+}
+
+.sheet-chat-generating-border > .sheet-chat-panel-inner {
+  position: relative;
+  z-index: 1;
+}
+
 .select-scrollbar::-webkit-scrollbar {
   width: 6px;
 }

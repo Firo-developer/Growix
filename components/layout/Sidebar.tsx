@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
-import {AnimatePresence, motion} from 'motion/react';
+import {AnimatePresence, LayoutGroup, motion} from 'motion/react';
 import {cn} from '@/lib/utils';
 import {useSidebar} from '@/components/layout/SidebarContext';
 import {Icon} from '@/components/ui/Icon';
@@ -36,24 +36,31 @@ function NavLink({
   collapsed: boolean;
   onNavigate: () => void;
 }) {
-  const link = (
+  return (
     <Link
       href={item.href}
       onClick={onNavigate}
       title={collapsed ? item.label : undefined}
       className={cn(
-        'flex items-center text-[14px] font-medium transition-colors',
+        'relative flex items-center text-[14px] font-medium transition-colors',
         collapsed ? 'h-9 w-9 justify-center rounded-full' : 'h-10 w-full gap-1.5 rounded-xl pl-[12px] pr-2',
-        isActive ? (collapsed ? 'bg-gray text-heading' : 'bg-gray text-heading') : 'text-text hover:bg-gray/70 hover:text-heading',
+        isActive ? 'text-heading' : 'text-text hover:bg-gray/70 hover:text-heading',
       )}>
-      <Icon name={item.iconName} size={18} className={cn('shrink-0', isActive ? 'text-heading' : 'text-muted')} />
-      <span className={cn('min-w-0 overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 ease-out', collapsed ? 'max-w-0 translate-x-1 opacity-0' : 'max-w-[180px] translate-x-0 opacity-100')}>
-        {item.label}
-      </span>
+      {isActive && (
+        <motion.span
+          layoutId={collapsed ? 'sidebar-nav-active-collapsed' : 'sidebar-nav-active-expanded'}
+          className={cn('absolute inset-0 bg-gray', collapsed ? 'rounded-full' : 'rounded-xl')}
+          transition={{type: 'spring', stiffness: 400, damping: 32}}
+        />
+      )}
+      <Icon name={item.iconName} size={18} className={cn('relative z-10 shrink-0', isActive ? 'text-heading' : 'text-muted')} />
+      {!collapsed && (
+        <span className="relative z-10 min-w-0 max-w-[180px] overflow-hidden whitespace-nowrap opacity-100 transition-[max-width,opacity,transform] duration-200 ease-out">
+          {item.label}
+        </span>
+      )}
     </Link>
   );
-
-  return link;
 }
 
 function SidebarInner({
@@ -84,7 +91,7 @@ function SidebarInner({
 
   return (
     <>
-      <div className={cn('flex h-14 shrink-0 items-center', collapsed ? 'justify-start px-[11px]' : 'justify-between px-[11px]')}>
+      <div className={cn('flex h-14 shrink-0 items-center', collapsed ? 'justify-center' : 'justify-between px-[11px]')}>
         {collapsed ? (
           <button
             type="button"
@@ -92,7 +99,7 @@ function SidebarInner({
             aria-label={toggleLabel}
             title="Expand sidebar"
             className="group relative flex h-9 w-9 items-center justify-center rounded-full border border-border/75 bg-card text-heading shadow-[0_4px_10px_rgba(25,27,31,0.04)] transition-colors hover:bg-gray">
-            <img src="/logo.png" alt="EthioGrowth" className="h-8 w-8 transition-opacity duration-150 group-hover:opacity-0" />
+            <img src="/logo.png" alt="Growix" className="h-8 w-8 transition-opacity duration-150 group-hover:opacity-0" />
             <Icon
               name="sidebar-right"
               size={18}
@@ -104,9 +111,9 @@ function SidebarInner({
             <Link
               href="/dashboard"
               onClick={onNavigate}
-              aria-label="EthioGrowth dashboard"
+              aria-label="Growix dashboard"
               className="flex h-9 w-9 items-center justify-center rounded-xl text-heading transition-colors hover:bg-gray">
-              <img src="/logo.png" alt="EthioGrowth" className="h-8 w-8" />
+              <img src="/logo.png" alt="Growix" className="h-8 w-8" />
             </Link>
             <button
               type="button"
@@ -119,27 +126,33 @@ function SidebarInner({
         )}
       </div>
 
-      <nav className={cn('flex-1 overflow-y-auto no-scrollbar', collapsed ? 'px-0 py-3' : 'px-2 py-2')}>
-        <div className={cn('flex flex-col', collapsed ? 'mx-auto w-fit items-center gap-1 rounded-[22px] border border-border/75 bg-card p-1 shadow-[0_8px_22px_rgba(25,27,31,0.06)]' : 'gap-1')}>
-          {navItems.map((item) => (
-            <NavLink
-              key={item.href}
-              item={item}
-              isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
-              collapsed={collapsed}
-              onNavigate={onNavigate}
-            />
-          ))}
-        </div>
+      <nav className={cn('overflow-y-auto no-scrollbar', collapsed ? 'shrink-0 py-3' : 'flex-1 px-2 py-2')}>
+        <LayoutGroup id={collapsed ? 'sidebar-nav-collapsed' : 'sidebar-nav-expanded'}>
+          <div className={cn('flex flex-col', collapsed ? 'mx-auto w-fit items-center gap-1 rounded-[22px] border border-border/75 bg-card p-1 shadow-[0_8px_22px_rgba(25,27,31,0.06)]' : 'gap-1')}>
+            {navItems.map((item) => (
+              <NavLink
+                key={item.href}
+                item={item}
+                isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
+                collapsed={collapsed}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </div>
+        </LayoutGroup>
       </nav>
 
-      <div className={cn('py-3', collapsed ? 'px-0' : 'px-2')}>
-        <div className={cn('flex items-center', collapsed ? 'mx-auto w-fit flex-col-reverse gap-1 rounded-[22px] border border-border/75 bg-card p-1 shadow-[0_8px_22px_rgba(25,27,31,0.06)]' : 'justify-between')}>
-          <div className={cn('flex h-9 w-9 items-center justify-center', !collapsed && 'ml-[3px]')}>
-            <UserMenu />
+      <div className={cn('shrink-0 py-3', collapsed && 'mt-auto', !collapsed && 'px-2')}>
+        {collapsed ? (
+          <div className="mx-auto flex w-fit flex-col-reverse items-center gap-1 rounded-[22px] border border-border/75 bg-card p-1 shadow-[0_8px_22px_rgba(25,27,31,0.06)]">
+            <div className="flex h-9 w-9 items-center justify-center">
+              <UserMenu collapsed />
+            </div>
+            {settingsLink}
           </div>
-          {settingsLink}
-        </div>
+        ) : (
+          <UserMenu collapsed={false} />
+        )}
       </div>
     </>
   );
@@ -156,15 +169,17 @@ export function Sidebar() {
           animate={{width: collapsed ? 58 : 260}}
           transition={{type: 'spring', stiffness: 360, damping: 34, mass: 0.7}}
           className={cn(
-            'flex h-full flex-col',
+            'flex h-full flex-col overflow-hidden',
             collapsed ? 'border-r-0 bg-transparent' : 'border-r border-border/60 bg-[#FDFDFD] dark:bg-sidebar',
           )}>
-          <SidebarInner
-            collapsed={collapsed}
-            onNavigate={() => {}}
-            onToggle={toggleCollapsed}
-            toggleLabel={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          />
+          <div className={cn('flex h-full w-full flex-col', collapsed && 'w-[58px] shrink-0')}>
+            <SidebarInner
+              collapsed={collapsed}
+              onNavigate={() => {}}
+              onToggle={toggleCollapsed}
+              toggleLabel={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            />
+          </div>
         </motion.aside>
       </div>
 

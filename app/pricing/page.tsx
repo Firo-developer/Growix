@@ -44,7 +44,7 @@ export default function PricingPage() {
 
       <section className="mx-auto max-w-5xl pt-8 text-center sm:pt-14">
         <h1 className="text-[44px] font-semibold leading-none text-heading sm:text-[64px]">Pricing</h1>
-        <p className="mx-auto mt-5 max-w-2xl text-[17px] leading-7 text-text">Use EthioGrowth free while you build your foundation. Upgrade when your plans, campaigns, and team need more room.</p>
+        <p className="mx-auto mt-5 max-w-2xl text-[17px] leading-7 text-text">Use Growix free while you build your foundation. Upgrade when your plans, campaigns, and team need more room.</p>
         <div className="mt-7 inline-flex rounded-xl border border-border/70 glass-card p-1 shadow-sm">
           <button type="button" onClick={() => setAnnual(false)} className={`h-9 rounded-lg px-4 text-sm font-medium transition-colors ${!annual ? 'bg-card text-heading shadow-sm' : 'text-muted'}`}>Monthly</button>
           <button type="button" onClick={() => setAnnual(true)} className={`h-9 rounded-lg px-4 text-sm font-medium transition-colors ${annual ? 'bg-card text-heading shadow-sm' : 'text-muted'}`}>Annual</button>
@@ -53,7 +53,7 @@ export default function PricingPage() {
 
       <section className="mx-auto mt-14 grid max-w-5xl gap-5 lg:grid-cols-2">
         <motion.article initial={{opacity: 0, y: 14}} animate={{opacity: 1, y: 0}} transition={{duration: 0.35}} className="rounded-2xl glass-card p-5 shadow-[0_14px_36px_rgba(25,27,31,0.045)] dark:shadow-[0_14px_36px_rgba(0,0,0,0.2)] sm:p-6">
-          <p className="text-base font-semibold">EthioGrowth</p>
+          <p className="text-base font-semibold">Growix</p>
           <p className="mt-4 text-[42px] font-semibold leading-none">Free</p>
           <p className="mt-2 text-sm text-text">Free, forever for one business.</p>
           <Link href="/signup" className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-xl bg-heading text-sm font-semibold text-bg hover:opacity-90">Get started</Link>
@@ -61,7 +61,7 @@ export default function PricingPage() {
         </motion.article>
         <motion.article initial={{opacity: 0, y: 14}} animate={{opacity: 1, y: 0}} transition={{duration: 0.35, delay: 0.07}} className="public-panel-border rounded-2xl border public-panel-bg p-5 shadow-[0_14px_36px_rgba(25,27,31,0.055)] dark:shadow-[0_14px_36px_rgba(0,0,0,0.2)] sm:p-6">
           <div className="flex items-center justify-between gap-3">
-            <p className="public-accent text-base font-semibold">EthioGrowth Pro</p>
+            <p className="public-accent text-base font-semibold">Growix Pro</p>
             <span className="public-accent-bg rounded-lg px-2.5 py-1 text-xs font-medium">Best for growth</span>
           </div>
           <div className="mt-4 flex items-end gap-2">
@@ -111,7 +111,7 @@ export default function PricingPage() {
 
       <footer className="mx-auto mt-20 flex max-w-5xl flex-col gap-4 border-t border-border/65 pt-7 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <span className="font-semibold text-heading">EthioGrowth</span>
+          <span className="font-semibold text-heading">Growix</span>
           <Link href="/" className="hover:text-heading">Home</Link>
           <Link href="/pricing" className="hover:text-heading">Pricing</Link>
           <Link href="/signup" className="hover:text-heading">Get started</Link>

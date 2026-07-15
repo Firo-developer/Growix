@@ -4,7 +4,7 @@ import {PublicHeader} from '@/components/public/PublicHeader';
 
 const helpTopics = [
   {icon: 'ai-homepage', title: 'Set up your workspace', text: 'Start with business information, goals, and preferences.'},
-  {icon: 'conversation-box', title: 'Work with EthioGrowth AI', text: 'Learn how to ask for plans, ideas, and next actions.'},
+  {icon: 'conversation-box', title: 'Work with Growix', text: 'Learn how to ask for plans, ideas, and next actions.'},
   {icon: 'status-up', title: 'Plans and billing', text: 'Understand Free, Pro, add-ons, and managing your plan.'},
   {icon: 'user', title: 'Invite collaborators', text: 'Bring people into the right conversations and tasks.'},
 ];

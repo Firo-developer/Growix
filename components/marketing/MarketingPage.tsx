@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent} from 'react';
+import {useEffect, useRef, useState, type ChangeEvent, type CSSProperties, type FormEvent, type KeyboardEvent} from 'react';
 import {AnimatePresence, motion} from 'motion/react';
 import {AnimatedMarkdown, StreamingMarkdownLine} from '@/components/assistant/AnimatedMarkdown';
 import {Button} from '@/components/ui/Button';
@@ -12,10 +12,11 @@ import {Input} from '@/components/ui/Input';
 import {Select} from '@/components/ui/Select';
 import {cn} from '@/lib/utils';
 
-const PROMPT_FONT_SIZE = 18;
-const PROMPT_LINE_HEIGHT = 28;
-const RESPONSE_STREAM_FONT_SIZE = 16;
-const RESPONSE_STREAM_LINE_HEIGHT = 26;
+const SHEET_PROMPT_FONT_SIZE = 15;
+const SHEET_PROMPT_LINE_HEIGHT = 22;
+const SHEET_RESPONSE_FONT_SIZE = 14;
+const SHEET_RESPONSE_LINE_HEIGHT = 22;
+const SHEET_PROMPT_MAX_WIDTH = 560;
 
 type CampaignPlan = {
   id: number;
@@ -33,6 +34,9 @@ type ChatMessage = {
 };
 
 const BRIEF_DELIMITER = '---UPDATED_BRIEF---';
+
+const SHEET_ACTION_BUTTON =
+  'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-gray hover:text-heading';
 
 function extractPlanTitle(content: string, fallback: string) {
   return content.match(/^#{1,2}\s+(.+)$/m)?.[1] || fallback;
@@ -115,52 +119,49 @@ const channelOptions = [
   {id: 'Telegram', icon: 'direct-right'},
 ];
 
-function SheetChatUserMessage({text}: {text: string}) {
-  const [expanded, setExpanded] = useState(false);
-  const canCollapse = text.length > 280;
-
+function SheetInlineUserMessage({text}: {text: string}) {
   return (
-    <motion.div initial={{opacity: 0, y: 6}} animate={{opacity: 1, y: 0}} className="ml-auto w-fit max-w-[88%]">
-      <div className={cn('bg-gray text-heading', canCollapse ? 'rounded-[20px] px-3.5 py-2.5' : 'rounded-full px-3.5 py-2')}>
-        <p className={cn('whitespace-pre-wrap text-[14px] leading-6', canCollapse && !expanded && 'max-h-[180px] overflow-hidden')}>
-          {text}
-        </p>
-        {canCollapse && (
-          <button
-            type="button"
-            onClick={() => setExpanded((current) => !current)}
-            className="mt-1.5 flex items-center gap-1 text-[12px] font-medium text-heading transition-opacity hover:opacity-70">
-            {expanded ? 'Show less' : 'Show more'}
-            <Icon name={expanded ? 'arrow-up' : 'arrow-down'} size={13} />
-          </button>
-        )}
-      </div>
-    </motion.div>
+    <p className="whitespace-pre-wrap text-[13px] leading-5 text-muted">{text}</p>
   );
 }
 
-function SheetChatAssistantMessage({text}: {text: string}) {
+function SheetInlineAssistantMessage({text}: {text: string}) {
   return (
-    <motion.article initial={{opacity: 0, y: 8}} animate={{opacity: 1, y: 0}} transition={{duration: 0.25}} className="max-w-full">
+    <div className="text-[13px] leading-[22px] text-heading [&_.markdown-body]:text-[13px] [&_.markdown-body]:leading-[22px]">
       <AnimatedMarkdown content={text} animate={false} />
-    </motion.article>
+    </div>
   );
 }
 
-function SheetChatStreamingReply({content}: {content: string}) {
+function SheetInlineStreamingReply({content}: {content: string}) {
   const lines = content.split('\n');
 
   return (
-    <motion.article initial={{opacity: 0, y: 8}} animate={{opacity: 1, y: 0}} transition={{duration: 0.25}} className="max-w-full" aria-live="polite">
-      <div className="space-y-1">
+    <div className="text-[13px] leading-[22px] text-heading" aria-live="polite">
+      <div className="space-y-0.5">
         {lines.map((line, index) => (
-          <div key={`stream-line-${index}`} style={{fontSize: `${RESPONSE_STREAM_FONT_SIZE}px`, lineHeight: `${RESPONSE_STREAM_LINE_HEIGHT}px`}}>
+          <div key={`stream-line-${index}`} style={{fontSize: `${SHEET_RESPONSE_FONT_SIZE}px`, lineHeight: `${SHEET_RESPONSE_LINE_HEIGHT}px`}}>
             <StreamingMarkdownLine content={line} animate={false} />
           </div>
         ))}
       </div>
-      <span className="ml-1 inline-block h-4 w-0.5 animate-pulse rounded-full bg-heading align-[-3px]" aria-hidden="true" />
-    </motion.article>
+    </div>
+  );
+}
+
+function PlanStreamingBrief({content}: {content: string}) {
+  const lines = content.split('\n');
+
+  return (
+    <div aria-live="polite">
+      <div className="space-y-1">
+        {lines.map((line, index) => (
+          <div key={`brief-line-${index}`}>
+            <StreamingMarkdownLine content={line} animate={false} />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -168,8 +169,10 @@ function PlanChatPanel({
   open,
   planTitle,
   content,
-  onClose,
   onContentUpdate,
+  onBriefRegenerationStart,
+  onBriefStream,
+  onBriefRegenerationCancel,
   onExpandedChange,
 }: {
   open: boolean;
@@ -177,9 +180,11 @@ function PlanChatPanel({
   content: string;
   onClose: () => void;
   onContentUpdate: (content: string, title?: string) => void;
+  onBriefRegenerationStart?: () => void;
+  onBriefStream?: (brief: string) => void;
+  onBriefRegenerationCancel?: () => void;
   onExpandedChange?: (expanded: boolean) => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState('');
   const [isTextExpanded, setIsTextExpanded] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -189,15 +194,14 @@ function PlanChatPanel({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const hasConversation = expanded || messages.length > 0 || isGenerating;
+  const showResponseArea = messages.some((message) => message.role === 'assistant') || Boolean(streamingReply.trim());
 
   useEffect(() => {
-    onExpandedChange?.(hasConversation);
-  }, [hasConversation, onExpandedChange]);
+    onExpandedChange?.(showResponseArea);
+  }, [showResponseArea, onExpandedChange]);
 
   useEffect(() => {
     if (!open) {
-      setExpanded(false);
       setInput('');
       setMessages([]);
       setStreamingReply('');
@@ -213,31 +217,30 @@ function PlanChatPanel({
   }, [open]);
 
   useEffect(() => {
-    if (hasConversation) {
+    if (showResponseArea) {
       messagesEndRef.current?.scrollIntoView({behavior: 'smooth', block: 'end'});
     }
-  }, [messages, streamingReply, hasConversation, isGenerating]);
+  }, [messages, streamingReply, showResponseArea]);
 
   function resizeTextarea() {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
     textarea.style.height = 'auto';
-    const contentHeight = Math.min(textarea.scrollHeight, 160);
-    textarea.style.height = `${Math.max(contentHeight, PROMPT_LINE_HEIGHT)}px`;
-    setIsTextExpanded(contentHeight > PROMPT_LINE_HEIGHT + 8);
+    const contentHeight = Math.min(textarea.scrollHeight, showResponseArea ? 120 : 96);
+    textarea.style.height = `${Math.max(contentHeight, SHEET_PROMPT_LINE_HEIGHT)}px`;
+    setIsTextExpanded(contentHeight > SHEET_PROMPT_LINE_HEIGHT + 8);
   }
 
   useEffect(() => {
     resizeTextarea();
-  }, [input, open]);
+  }, [input, open, showResponseArea]);
 
   async function sendMessage() {
     const prompt = input.trim();
     if (!prompt || isGenerating) return;
 
     setError('');
-    setExpanded(true);
     setInput('');
     const userMessage: ChatMessage = {id: Date.now(), role: 'user', text: prompt};
     setMessages((current) => [...current, userMessage]);
@@ -248,6 +251,8 @@ function PlanChatPanel({
     const enrichedPrompt = `${prompt}\n\nCurrent campaign brief to explain or edit:\n${content}\n\nRespond in two parts separated by exactly "${BRIEF_DELIMITER}":\n1. A concise, friendly reply explaining what you changed or answering the question.\n2. The complete updated campaign brief in Markdown. Always include the full brief, even for small edits or pure explanations.`;
 
     try {
+      let briefStarted = false;
+
       const fullResponse = await streamAssistantResponse(
         [
           ...history,
@@ -255,7 +260,20 @@ function PlanChatPanel({
         ],
         (streamed) => {
           const markerIndex = streamed.indexOf(BRIEF_DELIMITER);
-          setStreamingReply((markerIndex === -1 ? streamed : streamed.slice(0, markerIndex)).trim());
+          if (markerIndex === -1) {
+            setStreamingReply(streamed.trim());
+            return;
+          }
+
+          if (!briefStarted) {
+            briefStarted = true;
+            onBriefRegenerationStart?.();
+          }
+
+          const reply = streamed.slice(0, markerIndex).trim();
+          const brief = streamed.slice(markerIndex + BRIEF_DELIMITER.length).trim();
+          setStreamingReply(reply);
+          if (brief) onBriefStream?.(brief);
         },
       );
 
@@ -292,91 +310,56 @@ function PlanChatPanel({
     setInput(event.target.value);
   }
 
-  const canSend = Boolean(input.trim());
+  const canSend = Boolean(input.trim()) && !isGenerating;
 
   return (
     <AnimatePresence>
       {open && (
         <motion.div
           layout
-          initial={{y: 24, opacity: 0, scale: 0.98}}
-          animate={{y: 0, opacity: 1, scale: 1}}
-          exit={{y: 24, opacity: 0, scale: 0.98}}
+          initial={{y: 12, opacity: 0}}
+          animate={{y: 0, opacity: 1}}
+          exit={{y: 12, opacity: 0}}
           transition={{type: 'spring', stiffness: 380, damping: 34}}
-          className={cn(
-            'absolute inset-x-3 bottom-3 z-20 flex flex-col overflow-hidden sm:inset-x-4 sm:bottom-4',
-            'rounded-[24px] border border-white/50 bg-card/85 shadow-[0_12px_40px_rgba(25,27,31,0.14)] backdrop-blur-2xl dark:border-white/10',
-            hasConversation ? 'max-h-[min(520px,58vh)]' : '',
-          )}>
-          <div className="flex items-center justify-between gap-2 border-b border-border/50 px-3.5 py-2.5">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border/60 bg-card/90 text-heading shadow-sm">
-                <Icon name="conversation-box" size={14} />
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-[13px] font-semibold text-heading">Refine with AI</p>
-                <p className="truncate text-[11px] text-muted">
-                  {hasConversation ? 'Your brief updates as you chat' : 'Explain, fix, or expand this brief'}
+          className="absolute bottom-3 left-3 z-20 w-[min(var(--sheet-prompt-width),calc(100%-1.5rem))] sm:bottom-4 sm:left-4"
+          style={{'--sheet-prompt-width': `${SHEET_PROMPT_MAX_WIDTH}px`} as CSSProperties}>
+          <div className={cn('rounded-[20px]', isGenerating && 'sheet-chat-generating-border')}>
+            <div
+              className={cn(
+                'sheet-chat-panel-inner flex flex-col overflow-hidden bg-card/95 shadow-[0_6px_20px_rgba(18,18,18,0.06)] backdrop-blur-sm transition-[max-height,border-color] duration-300',
+                isGenerating ? 'rounded-[18px]' : 'rounded-[20px] border border-border/70',
+                showResponseArea ? 'max-h-[min(380px,46vh)]' : '',
+              )}>
+            <AnimatePresence initial={false}>
+              {showResponseArea && (
+                <motion.div
+                  initial={{height: 0, opacity: 0}}
+                  animate={{height: 'auto', opacity: 1}}
+                  exit={{height: 0, opacity: 0}}
+                  transition={{duration: 0.28, ease: [0.22, 1, 0.36, 1]}}
+                  className="min-h-0 overflow-y-auto border-b border-border/50 px-3 py-2.5 [scrollbar-color:theme(colors.border)_transparent] [scrollbar-width:thin]">
+                  <div className="space-y-3">
+                    {messages.map((message) => (
+                      <div key={message.id}>
+                        {message.role === 'user'
+                          ? <SheetInlineUserMessage text={message.text} />
+                          : <SheetInlineAssistantMessage text={message.text} />}
+                      </div>
+                    ))}
+                    {streamingReply && <SheetInlineStreamingReply content={streamingReply} />}
+                    <div ref={messagesEndRef} />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <form onSubmit={handleSubmit} className="shrink-0 px-2 py-1.5">
+              {error && (
+                <p className="mb-1.5 rounded-xl bg-[#fff0f0] px-2.5 py-1.5 text-[11px] text-[#c23434] dark:bg-[#3a1518] dark:text-[#ff9d9d]">
+                  {error}
                 </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-gray/80 hover:text-heading"
-              aria-label="Close chat">
-              <Icon name="arrow-down" size={15} />
-            </button>
-          </div>
-
-          <AnimatePresence initial={false}>
-            {hasConversation && (
-              <motion.div
-                initial={{opacity: 0, height: 0}}
-                animate={{opacity: 1, height: 'auto'}}
-                exit={{opacity: 0, height: 0}}
-                transition={{duration: 0.32, ease: [0.22, 1, 0.36, 1]}}
-                className="min-h-0 flex-1 overflow-y-auto px-3.5 py-3 [scrollbar-color:theme(colors.border)_transparent] [scrollbar-width:thin]">
-                {messages.length === 0 && !isGenerating && (
-                  <p className="mb-3 rounded-2xl border border-border/60 bg-gray/40 px-3 py-2.5 text-xs leading-5 text-muted">
-                    Ask the AI to explain a section, rewrite copy, adjust the schedule, or make the brief more detailed.
-                  </p>
-                )}
-                <div className="space-y-4">
-                  {messages.map((message) => (
-                    message.role === 'user'
-                      ? <SheetChatUserMessage key={message.id} text={message.text} />
-                      : <SheetChatAssistantMessage key={message.id} text={message.text} />
-                  ))}
-                  {isGenerating && !streamingReply && (
-                    <motion.div initial={{opacity: 0}} animate={{opacity: 1}} className="flex h-7 items-center" aria-label="Assistant is thinking">
-                      <motion.span
-                        className="h-2.5 w-2.5 rounded-full bg-heading"
-                        animate={{opacity: [0.35, 1, 0.35], scale: [0.82, 1, 0.82]}}
-                        transition={{duration: 0.95, repeat: Infinity, ease: 'easeInOut'}}
-                      />
-                    </motion.div>
-                  )}
-                  {isGenerating && streamingReply && (
-                    <SheetChatStreamingReply content={streamingReply} />
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <form onSubmit={handleSubmit} className="shrink-0 border-t border-border/50 p-2.5">
-            {error && (
-              <p className="mb-2 rounded-xl bg-[#fff0f0] px-3 py-2 text-xs text-[#c23434] dark:bg-[#3a1518] dark:text-[#ff9d9d]">
-                {error}
-              </p>
-            )}
-            <motion.div
-              layout
-              transition={{type: 'spring', stiffness: 380, damping: 32}}
-              className="rounded-[22px] border border-border/70 bg-card/90 p-2 shadow-[0_8px_24px_rgba(18,18,18,0.04)] transition-shadow focus-within:shadow-[0_8px_28px_rgba(18,18,18,0.07)]">
-              <div className={cn('grid gap-2', isTextExpanded ? 'grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_auto]' : 'grid-cols-[minmax(0,1fr)_auto] items-center')}>
+              )}
+              <div className={cn('grid gap-1.5', isTextExpanded ? 'grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_auto]' : 'grid-cols-[minmax(0,1fr)_auto] items-center')}>
                 <textarea
                   ref={textareaRef}
                   rows={1}
@@ -385,40 +368,33 @@ function PlanChatPanel({
                   onInput={resizeTextarea}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask AI to explain or improve this brief..."
-                  style={{fontSize: `${PROMPT_FONT_SIZE}px`, lineHeight: `${PROMPT_LINE_HEIGHT}px`}}
+                  style={{fontSize: `${SHEET_PROMPT_FONT_SIZE}px`, lineHeight: `${SHEET_PROMPT_LINE_HEIGHT}px`}}
                   className={cn(
                     'block min-w-0 resize-none bg-transparent font-normal text-heading outline-none placeholder:text-muted',
                     isTextExpanded
-                      ? 'col-span-2 col-start-1 row-start-1 max-h-[140px] overflow-y-auto px-2 pt-1'
-                      : 'col-start-1 row-start-1 min-h-[28px] overflow-hidden py-0 pl-2',
+                      ? 'col-span-2 col-start-1 row-start-1 max-h-[120px] overflow-y-auto px-1.5 pt-0.5'
+                      : 'col-start-1 row-start-1 min-h-[22px] overflow-hidden py-0 pl-1.5',
                   )}
                   aria-label="Ask AI to refine the campaign brief"
                 />
-                <div className={cn('flex shrink-0 items-center justify-end', isTextExpanded ? 'col-start-2 row-start-2' : 'col-start-2 row-start-1')}>
-                  {isGenerating ? (
-                    <button
-                      type="button"
-                      disabled
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-heading/70 text-bg"
-                      aria-label="Generating response">
-                      <span className="h-3 w-3 animate-spin rounded-full border-2 border-bg/40 border-t-bg" />
-                    </button>
-                  ) : (
+                {!isGenerating && (
+                  <div className={cn('flex shrink-0 items-center justify-end', isTextExpanded ? 'col-start-2 row-start-2' : 'col-start-2 row-start-1')}>
                     <motion.button
                       type="submit"
                       disabled={!canSend}
                       initial={false}
                       animate={{scale: canSend ? 1 : 0.88, opacity: canSend ? 1 : 0.7}}
                       transition={{type: 'spring', stiffness: 420, damping: 25}}
-                      className="flex h-9 w-9 items-center justify-center rounded-full bg-heading text-bg transition-opacity enabled:hover:opacity-90 disabled:bg-[#A8A8AA]"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-heading text-bg transition-opacity enabled:hover:opacity-90 disabled:bg-[#A8A8AA]"
                       aria-label="Send message">
-                      <Icon name="arrow-up" size={18} className="text-bg" />
+                      <Icon name="arrow-up" size={15} className="text-bg" />
                     </motion.button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
-            </motion.div>
-          </form>
+            </form>
+            </div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -441,18 +417,39 @@ function PlanSheet({
   const [chatExpanded, setChatExpanded] = useState(false);
   const [content, setContent] = useState(plan?.content ?? '');
   const [contentVersion, setContentVersion] = useState(0);
+  const [isBriefStreaming, setIsBriefStreaming] = useState(false);
+  const [briefSnapshot, setBriefSnapshot] = useState('');
+  const [streamingBrief, setStreamingBrief] = useState('');
+  const contentScrollRef = useRef<HTMLDivElement>(null);
+
+  const hideBriefSnapshot = streamingBrief.trim().length > 80;
+  const showBriefOverlay = isBriefStreaming && Boolean(streamingBrief.trim());
 
   useEffect(() => {
     if (!open) {
       setExpanded(false);
       setChatOpen(false);
       setChatExpanded(false);
+      setIsBriefStreaming(false);
+      setBriefSnapshot('');
+      setStreamingBrief('');
     }
   }, [open]);
 
   useEffect(() => {
-    if (plan) setContent(plan.content);
-  }, [plan]);
+    if (plan) {
+      setContent(plan.content);
+      setIsBriefStreaming(false);
+      setBriefSnapshot('');
+      setStreamingBrief('');
+    }
+  }, [plan?.id]);
+
+  useEffect(() => {
+    if (showBriefOverlay) {
+      contentScrollRef.current?.scrollTo({top: 0, behavior: 'smooth'});
+    }
+  }, [showBriefOverlay, streamingBrief]);
 
   if (!plan) return null;
 
@@ -469,10 +466,23 @@ function PlanSheet({
     window.setTimeout(() => URL.revokeObjectURL(url), 0);
   };
 
+  function handleBriefRegenerationStart() {
+    setBriefSnapshot(content);
+    setIsBriefStreaming(true);
+    setStreamingBrief('');
+  }
+
+  function handleBriefStream(partialBrief: string) {
+    setStreamingBrief(partialBrief);
+  }
+
   function handleContentUpdate(nextContent: string, nextTitle?: string) {
     if (!plan) return;
     setContent(nextContent);
     setContentVersion((current) => current + 1);
+    setIsBriefStreaming(false);
+    setStreamingBrief('');
+    setBriefSnapshot('');
     onPlanUpdate(plan.id, {
       content: nextContent,
       ...(nextTitle ? {title: nextTitle} : {}),
@@ -499,40 +509,48 @@ function PlanSheet({
             transition={{type: 'spring', stiffness: 360, damping: 34}}
             className={cn(
               'fixed z-[160] flex flex-col overflow-hidden border border-white/50 bg-card/80 shadow-[-16px_14px_50px_rgba(25,27,31,0.16)] backdrop-blur-2xl transition-[top,right,bottom,left,width,border-radius] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] dark:border-white/10',
+              'bottom-2 right-2 top-2 rounded-[24px] sm:bottom-4 sm:right-4 sm:top-4',
               expanded
-                ? 'inset-0 rounded-none sm:inset-y-0 sm:left-auto sm:right-0 sm:w-[min(960px,calc(100vw-5rem))] lg:w-[min(1100px,calc(100vw-8rem))]'
-                : 'bottom-2 right-2 top-2 w-[calc(100vw-1rem)] rounded-[24px] sm:bottom-4 sm:right-4 sm:top-4 sm:w-[min(640px,calc(100vw-2rem))]',
+                ? 'w-[calc(100vw-1rem)] sm:w-[min(960px,calc(100vw-2rem))]'
+                : 'w-[calc(100vw-1rem)] sm:w-[min(640px,calc(100vw-2rem))]',
             )}>
             <div className="p-2.5 sm:p-3">
-              <div className="flex items-center justify-between gap-2 rounded-[18px] border border-border/70 bg-card/75 p-1.5 shadow-[0_8px_22px_rgba(25,27,31,0.05)] backdrop-blur-xl">
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border/70 bg-card text-heading shadow-sm"><Icon name="document-text" size={16} /></span>
+              <div className="flex items-center gap-2 sm:gap-2.5">
+                <div className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[26px] border border-border/75 bg-card/95 px-3 py-2 shadow-[0_8px_24px_rgba(25,27,31,0.04)] backdrop-blur-sm sm:px-3.5 sm:py-2.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border/75 bg-card text-heading shadow-[0_4px_10px_rgba(25,27,31,0.04)]">
+                    <Icon name="document-text" size={16} />
+                  </span>
                   <div className="min-w-0 pr-1">
                     <p className="truncate text-sm font-semibold text-heading">{plan.title}</p>
-                    <p className="mt-0.5 text-xs text-muted">AI campaign brief</p>
+                    <p className="mt-0.5 truncate text-xs text-muted">AI campaign brief</p>
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center rounded-[14px] border border-border/70 bg-card/80 p-1 shadow-sm">
+
+                <div className="flex shrink-0 items-center gap-0.5 overflow-hidden rounded-[26px] border border-border/75 bg-card/85 py-0.5 pr-1 shadow-[0_8px_24px_rgba(25,27,31,0.04)] backdrop-blur-sm">
                   <button
                     type="button"
                     onClick={() => setChatOpen((current) => !current)}
                     className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded-[10px] transition-colors hover:bg-gray hover:text-heading',
-                      chatOpen ? 'bg-gray text-heading' : 'text-muted',
+                      SHEET_ACTION_BUTTON,
+                      chatOpen && 'bg-gray text-heading',
                     )}
                     aria-label={chatOpen ? 'Close AI chat' : 'Open AI chat'}>
-                    <Icon name="conversation-box" size={15} />
+                    <Icon name="conversation-box" size={16} />
                   </button>
-                  <button type="button" onClick={() => setExpanded((current) => !current)} className="flex h-8 w-8 items-center justify-center rounded-[10px] text-muted transition-colors hover:bg-gray hover:text-heading" aria-label={expanded ? 'Reduce sheet' : 'Expand sheet'}>
-                    <Icon name={expanded ? 'maximize_1' : 'maximize'} size={15} />
+                  <button
+                    type="button"
+                    onClick={() => setExpanded((current) => !current)}
+                    className={SHEET_ACTION_BUTTON}
+                    aria-label={expanded ? 'Reduce sheet' : 'Expand sheet'}>
+                    <Icon name={expanded ? 'maximize_1' : 'maximize'} size={16} />
                   </button>
-                  <button type="button" onClick={copyPlan} className="flex h-8 w-8 items-center justify-center rounded-[10px] text-muted transition-colors hover:bg-gray hover:text-heading" aria-label="Copy campaign plan">
-                    <Icon name="copy" size={15} />
+                  <button type="button" onClick={copyPlan} className={SHEET_ACTION_BUTTON} aria-label="Copy campaign plan">
+                    <Icon name="copy" size={16} />
                   </button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button type="button" className="flex h-8 w-8 items-center justify-center rounded-[10px] text-muted transition-colors hover:bg-gray hover:text-heading" aria-label="Download campaign plan">
-                        <Icon name="arrow-down3" size={15} />
+                      <button type="button" className={SHEET_ACTION_BUTTON} aria-label="Download campaign plan">
+                        <Icon name="arrow-down3" size={16} />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" sideOffset={8} className="z-[250] min-w-[170px] bg-card/95 backdrop-blur-xl">
@@ -540,16 +558,17 @@ function PlanSheet({
                       <DropdownMenuItem onSelect={() => downloadPlan('text')}><Icon name="copy" size={15} />Plain text (.txt)</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <button type="button" onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-[10px] text-muted transition-colors hover:bg-gray hover:text-heading" aria-label="Close plan">
+                  <button type="button" onClick={onClose} className={SHEET_ACTION_BUTTON} aria-label="Close plan">
                     <Icon name="arrow-right3" size={16} />
                   </button>
                 </div>
               </div>
             </div>
             <div
+              ref={contentScrollRef}
               className={cn(
                 'min-h-0 flex-1 overflow-y-auto px-5 pt-3 transition-[padding-bottom] duration-300 sm:px-8',
-                chatOpen ? (chatExpanded ? 'pb-[min(540px,60vh)]' : 'pb-36') : 'pb-7',
+                chatOpen ? (chatExpanded ? 'pb-[min(400px,48vh)]' : 'pb-16') : 'pb-7',
               )}>
               <motion.div
                 layout
@@ -562,7 +581,47 @@ function PlanSheet({
                   <span className="rounded-lg bg-gray px-2.5 py-1 text-xs font-medium text-heading">{plan.goal}</span>
                   {plan.channels.map((channel) => <span key={channel} className="rounded-lg border border-border px-2.5 py-1 text-xs text-muted">{channel}</span>)}
                 </div>
-                <AnimatedMarkdown key={contentVersion} content={content} animate={false} />
+
+                {isBriefStreaming ? (
+                  <div className="relative">
+                    <AnimatePresence initial={false}>
+                      {!hideBriefSnapshot && (
+                        <motion.div
+                          key="brief-snapshot"
+                          initial={{opacity: 1, filter: 'blur(0px)'}}
+                          animate={{
+                            opacity: showBriefOverlay ? 0.35 : 0.55,
+                            filter: showBriefOverlay ? 'blur(4px)' : 'blur(2px)',
+                          }}
+                          exit={{opacity: 0, filter: 'blur(8px)', height: 0, marginBottom: 0}}
+                          transition={{duration: 0.45, ease: [0.22, 1, 0.36, 1]}}
+                          className="origin-top overflow-hidden">
+                          <AnimatedMarkdown content={briefSnapshot} animate={false} />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <AnimatePresence>
+                      {showBriefOverlay && (
+                        <motion.div
+                          key="brief-stream"
+                          initial={{opacity: 0, y: 10}}
+                          animate={{opacity: 1, y: 0}}
+                          exit={{opacity: 0, y: -6}}
+                          transition={{duration: 0.35, ease: [0.22, 1, 0.36, 1]}}
+                          className={cn(
+                            'rounded-2xl border border-border/60 bg-card/96 shadow-[0_10px_30px_rgba(25,27,31,0.08)] backdrop-blur-md',
+                            hideBriefSnapshot ? 'relative' : 'absolute inset-x-0 top-0 z-10 px-4 py-4 sm:px-5',
+                            !hideBriefSnapshot && 'sm:-mx-2',
+                          )}>
+                          <PlanStreamingBrief content={streamingBrief} />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <AnimatedMarkdown key={contentVersion} content={content} animate={false} />
+                )}
               </motion.div>
             </div>
             <PlanChatPanel
@@ -571,6 +630,8 @@ function PlanSheet({
               content={content}
               onClose={() => setChatOpen(false)}
               onContentUpdate={handleContentUpdate}
+              onBriefRegenerationStart={handleBriefRegenerationStart}
+              onBriefStream={handleBriefStream}
               onExpandedChange={setChatExpanded}
             />
           </motion.aside>
@@ -668,7 +729,7 @@ export function MarketingPage() {
         <motion.section initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} transition={{duration: 0.3}} className="mb-7">
           <p className="text-sm font-medium text-muted">Marketing</p>
           <h1 className="mt-1 text-[30px] font-semibold leading-tight text-heading sm:text-[34px]">Create your next campaign.</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">EthioGrowth AI uses the business context you completed during onboarding, so you can move straight to the campaign.</p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Growix uses the business context you completed during onboarding, so you can move straight to the campaign.</p>
         </motion.section>
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_330px]">
@@ -734,7 +795,7 @@ export function MarketingPage() {
           </Card>
         </section>
 
-        {isGenerating && streamedBrief && <p className="mt-4 text-sm text-muted">EthioGrowth AI is shaping your brief...</p>}
+        {isGenerating && streamedBrief && <p className="mt-4 text-sm text-muted">Growix is shaping your brief...</p>}
       </div>
       <PlanSheet
         plan={activePlan}

@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'EthioGrowth AI — Business Intelligence Platform',
+  title: 'Growix — Business Intelligence Platform',
   description:
     'AI-powered growth platform for Ethiopian businesses. Strategy, marketing, analytics, and insights.',
 };

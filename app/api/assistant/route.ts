@@ -1,6 +1,6 @@
 import {NextResponse} from 'next/server';
 
-const SYSTEM_PROMPT = `You are EthioGrowth AI, a practical business growth assistant for Ethiopian businesses.
+const SYSTEM_PROMPT = `You are Growix, a practical business growth assistant for Ethiopian businesses.
 Give useful, specific, and concise advice. Use clean Markdown whenever it improves clarity, including headings, bullet lists, numbered steps, tables, and LaTeX only when a formula is genuinely useful. Do not invent business facts; ask a focused follow-up question when key information is missing.`;
 
 type ClientMessage = {
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
-      'X-OpenRouter-Title': 'EthioGrowth',
+      'X-OpenRouter-Title': 'Growix',
     },
     body: JSON.stringify({
       model: 'tencent/hy3:free',

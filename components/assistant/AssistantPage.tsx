@@ -6,6 +6,12 @@ import {AnimatedMarkdown, StreamingMarkdownLine} from '@/components/assistant/An
 import {useSidebar} from '@/components/layout/SidebarContext';
 import {Icon} from '@/components/ui/Icon';
 import {cn} from '@/lib/utils';
+import {
+  readAssistantConversations,
+  takeAssistantConversationRestore,
+  writeAssistantConversations,
+  type StoredConversation,
+} from '@/lib/assistant-conversations';
 
 const PROMPT_FONT_SIZE = 18;
 const PROMPT_LINE_HEIGHT = 28;
@@ -27,12 +33,8 @@ interface ChatMessage {
   markdownLines?: string[];
 }
 
-interface SavedConversation {
-  id: number;
-  title: string;
-  preview: string;
+interface SavedConversation extends StoredConversation {
   messages: ChatMessage[];
-  pinned?: boolean;
 }
 
 const QUICK_STARTS = [
@@ -140,9 +142,9 @@ function buildReply(prompt: string) {
   const lowerPrompt = prompt.toLowerCase();
 
   if (lowerPrompt.includes('who are you')) {
-    return `## EthioGrowth AI
+    return `## Growix
 
-I'm **EthioGrowth AI**, your business growth assistant. I help you turn a business question into a practical, actionable plan.
+I'm **Growix**, your business growth assistant. I help you turn a business question into a practical, actionable plan.
 
 ### What I can help you with
 
@@ -185,7 +187,7 @@ function buildReplyLines(prompt: string) {
 
   if (lowerPrompt.includes('who are you')) {
     return [
-      "I'm EthioGrowth AI, your business growth assistant.",
+      "I'm Growix, your business growth assistant.",
       'I help you turn a business question into a practical plan.',
       'Create marketing strategies and campaigns',
       'Plan content for Facebook, Instagram, TikTok, and Telegram',
@@ -209,9 +211,9 @@ function buildRealtimeReply(prompt: string) {
   const lowerPrompt = prompt.toLowerCase();
 
   if (lowerPrompt.includes('who are you')) {
-    return `## EthioGrowth AI
+    return `## Growix
 
-I'm **EthioGrowth AI**, your business growth assistant. I help you turn a business question into a practical, actionable plan.
+I'm **Growix**, your business growth assistant. I help you turn a business question into a practical, actionable plan.
 
 ### What I can help you with
 
@@ -264,8 +266,8 @@ function buildRealtimeLines(prompt: string) {
 
   if (lowerPrompt.includes('who are you')) {
     return [
-      '## EthioGrowth AI',
-      "I'm **EthioGrowth AI**, your business growth assistant.",
+      '## Growix',
+      "I'm **Growix**, your business growth assistant.",
       'I help you turn a business question into a practical plan.',
       '### What I can help you with',
       '- Create a **marketing strategy** or campaign',
@@ -578,6 +580,18 @@ export function AssistantPage() {
   const tokenizerBuffer = useRef('');
   const pendingScrollMessageId = useRef<number | null>(null);
   const objectUrls = useRef<string[]>([]);
+  const restoredConversation = useRef(false);
+  const [conversationsHydrated, setConversationsHydrated] = useState(false);
+
+  useEffect(() => {
+    setSavedConversations(readAssistantConversations() as SavedConversation[]);
+    setConversationsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!conversationsHydrated) return;
+    writeAssistantConversations(savedConversations);
+  }, [conversationsHydrated, savedConversations]);
 
   useEffect(() => {
     return () => {
@@ -843,6 +857,16 @@ export function AssistantPage() {
     window.scrollTo(0, 0);
   }
 
+  useEffect(() => {
+    if (restoredConversation.current) return;
+    const restoreId = takeAssistantConversationRestore();
+    if (!restoreId) return;
+    const conversation = savedConversations.find((item) => item.id === restoreId);
+    if (!conversation) return;
+    restoredConversation.current = true;
+    restoreConversation(conversation);
+  }, [savedConversations]);
+
   function renameConversation(conversation: SavedConversation) {
     const title = window.prompt('Rename chat', conversation.title)?.trim();
     if (!title) return;
@@ -856,7 +880,7 @@ export function AssistantPage() {
   }
 
   function shareConversation(conversation: SavedConversation) {
-    void navigator.clipboard.writeText(conversation.messages.map((message) => `${message.role === 'user' ? 'You' : 'EthioGrowth AI'}: ${message.text}`).join('\n\n'));
+    void navigator.clipboard.writeText(conversation.messages.map((message) => `${message.role === 'user' ? 'You' : 'Growix'}: ${message.text}`).join('\n\n'));
     setHistoryMenuId(null);
   }
 
@@ -985,7 +1009,7 @@ export function AssistantPage() {
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/70 bg-card text-heading shadow-[0_8px_22px_rgba(25,27,31,0.04)] dark:bg-card">
                 <Icon name="ai-send-message" size={19} />
               </span>
-              <p className="mt-3 text-sm font-medium text-heading">EthioGrowth AI workspace</p>
+              <p className="mt-3 text-sm font-medium text-heading">Growix workspace</p>
               <p className="mt-1 text-sm text-muted">Choose a starting point or ask a question in your own words.</p>
             </div>
             <div>{composer}</div>

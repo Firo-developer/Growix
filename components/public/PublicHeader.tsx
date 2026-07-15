@@ -15,11 +15,11 @@ export function PublicHeader({showNav = false}: PublicHeaderProps) {
   return (
     <header className="fixed inset-x-0 top-0 z-30 px-4 pt-3 sm:px-6 lg:px-8">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between rounded-2xl border border-border/60 bg-card/70 px-3 shadow-sm backdrop-blur-xl sm:px-4 dark:bg-card/80">
-        <Link href="/" className="flex items-center gap-2.5" aria-label="EthioGrowth home">
+        <Link href="/" className="flex items-center gap-2.5" aria-label="Growix home">
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-heading text-bg shadow-sm">
             <Icon name="star2" size={15} className="text-bg" />
           </span>
-          <span className="text-sm font-semibold tracking-normal text-heading">EthioGrowth</span>
+          <span className="text-sm font-semibold tracking-normal text-heading">Growix</span>
         </Link>
 
         {showNav ? (

@@ -31,7 +31,7 @@ const aiPrinciples = [
 ];
 
 const faqs = [
-  {question: 'Who is EthioGrowth for?', answer: 'EthioGrowth is for Ethiopian small businesses and growing teams that want clearer marketing, customer, and planning decisions without needing a large specialist team.'},
+  {question: 'Who is Growix for?', answer: 'Growix is for Ethiopian small businesses and growing teams that want clearer marketing, customer, and planning decisions without needing a large specialist team.'},
   {question: 'Do I need marketing experience to use it?', answer: 'No. Start with the business information you already know. The workspace turns that context into plain-language suggestions, plans, and practical next actions.'},
   {question: 'Can I invite people from my team?', answer: 'Yes. Collaboration features are designed for business owners and the people helping them with marketing, content, and day-to-day growth work.'},
   {question: 'How does the AI use my business information?', answer: 'Your inputs give recommendations useful context, such as your audience, location, products, and goals. You control the information you provide and decide which ideas to use.'},
@@ -71,7 +71,7 @@ export default function LandingPage() {
               Know your next move.
             </h1>
             <p className="mt-6 max-w-xl text-[17px] leading-7 text-white/85 sm:text-[19px]">
-              EthioGrowth helps ambitious Ethiopian businesses plan smarter marketing, understand customers, and turn daily work into steady progress.
+              Growix helps ambitious Ethiopian businesses plan smarter marketing, understand customers, and turn daily work into steady progress.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/signup" className="inline-flex h-11 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-heading shadow-sm transition-transform hover:-translate-y-0.5">
@@ -125,7 +125,7 @@ export default function LandingPage() {
           <div>
             <p className="public-accent text-sm font-medium">One connected project</p>
             <h2 className="mt-3 text-[31px] font-semibold leading-tight text-heading sm:text-[40px]">Your business has one story. Your workspace should too.</h2>
-            <p className="mt-4 max-w-md text-sm leading-6 text-text">EthioGrowth brings your business profile, customer ideas, marketing plans, content, and progress together so each next step has the context it needs.</p>
+            <p className="mt-4 max-w-md text-sm leading-6 text-text">Growix brings your business profile, customer ideas, marketing plans, content, and progress together so each next step has the context it needs.</p>
             <Link href="/signup" className="mt-6 inline-flex h-10 items-center gap-2 rounded-xl bg-heading px-4 text-sm font-medium text-bg transition-opacity hover:opacity-90">Create your workspace<Icon name="arrow-right4" size={14} className="text-bg" /></Link>
           </div>
           <motion.div initial={{opacity: 0, y: 16}} whileInView={{opacity: 1, y: 0}} viewport={{once: true, amount: 0.25}} transition={{duration: 0.4}} className="rounded-[22px] glass-card p-4 shadow-[0_14px_36px_rgba(25,27,31,0.045)] dark:shadow-[0_14px_36px_rgba(0,0,0,0.2)] sm:p-5">
@@ -142,7 +142,7 @@ export default function LandingPage() {
 
       <section id="ai" className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:px-8 lg:pb-24">
         <div className="public-panel-border overflow-hidden rounded-[24px] border public-panel-bg shadow-[0_14px_36px_rgba(25,27,31,0.04)] dark:shadow-[0_14px_36px_rgba(0,0,0,0.2)] lg:grid lg:grid-cols-[0.88fr_1.12fr]">
-          <div className="p-6 sm:p-8"><span className="public-accent-bg flex h-11 w-11 items-center justify-center rounded-xl"><Icon name="ai-send-message" size={19} /></span><p className="public-accent mt-6 text-sm font-medium">AI information</p><h2 className="mt-3 text-[31px] font-semibold leading-tight text-heading sm:text-[40px]">Advice that knows the business behind the question.</h2><p className="mt-4 max-w-md text-sm leading-6 text-text">EthioGrowth AI is designed to help you think through business decisions. It is not a replacement for your judgment, and it makes its work clearer by grounding guidance in the profile you choose to share.</p><Link href="/signup" className="mt-6 inline-flex h-10 items-center gap-2 rounded-xl bg-heading px-4 text-sm font-medium text-bg transition-opacity hover:opacity-90">Set up your AI context<Icon name="arrow-right4" size={14} className="text-bg" /></Link></div>
+          <div className="p-6 sm:p-8"><span className="public-accent-bg flex h-11 w-11 items-center justify-center rounded-xl"><Icon name="ai-send-message" size={19} /></span><p className="public-accent mt-6 text-sm font-medium">AI information</p><h2 className="mt-3 text-[31px] font-semibold leading-tight text-heading sm:text-[40px]">Advice that knows the business behind the question.</h2><p className="mt-4 max-w-md text-sm leading-6 text-text">Growix is designed to help you think through business decisions. It is not a replacement for your judgment, and it makes its work clearer by grounding guidance in the profile you choose to share.</p><Link href="/signup" className="mt-6 inline-flex h-10 items-center gap-2 rounded-xl bg-heading px-4 text-sm font-medium text-bg transition-opacity hover:opacity-90">Set up your AI context<Icon name="arrow-right4" size={14} className="text-bg" /></Link></div>
           <div className="public-panel-border border-t bg-card/40 p-5 sm:p-8 lg:border-l lg:border-t-0 dark:bg-card/50"><div className="space-y-0">{aiPrinciples.map((principle, index) => <div key={principle.label} className={`flex gap-4 py-5 ${index !== 0 ? 'border-t public-panel-border' : ''}`}><span className="public-accent-bg flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold">0{index + 1}</span><div><h3 className="text-sm font-semibold text-heading">{principle.label}</h3><p className="mt-1.5 text-sm leading-6 text-text">{principle.value}</p></div></div>)}</div></div>
         </div>
       </section>
@@ -155,7 +155,7 @@ export default function LandingPage() {
               <h2 className="mt-3 text-[31px] font-semibold leading-tight text-heading sm:text-[38px]">From question to action, without the noise.</h2>
             </div>
             <Link href="/assistant" className="inline-flex h-10 w-fit items-center gap-2 rounded-xl bg-heading px-4 text-sm font-medium text-bg transition-opacity hover:opacity-90">
-              Ask EthioGrowth AI
+              Ask Growix
               <Icon name="arrow-right4" size={14} className="text-bg" />
             </Link>
           </div>
@@ -186,13 +186,13 @@ export default function LandingPage() {
       <section id="faq" className="mx-auto max-w-4xl px-4 pb-16 pt-8 sm:px-6 lg:pb-24">
         <div className="text-center"><p className="public-accent text-sm font-medium">Questions, answered</p><h2 className="mt-3 text-[31px] font-semibold leading-tight text-heading sm:text-[40px]">Frequently asked questions</h2><p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-text">A few useful details before you set up your workspace.</p></div>
         <div className="mt-8 divide-y divide-border/70 rounded-2xl glass-card px-5 shadow-[0_10px_30px_rgba(25,27,31,0.035)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.2)] sm:px-6">{faqs.map((faq, index) => {const open = openFaq === index; return <div key={faq.question}><button type="button" onClick={() => setOpenFaq(open ? null : index)} aria-expanded={open} className="flex w-full items-center justify-between gap-5 py-5 text-left"><span className="text-sm font-semibold text-heading sm:text-base">{faq.question}</span><span className={`public-muted-bg flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-transform ${open ? 'rotate-45' : ''}`}><Icon name="add" size={14} /></span></button><motion.div initial={false} animate={{height: open ? 'auto' : 0, opacity: open ? 1 : 0}} transition={{duration: 0.2, ease: 'easeOut'}} className="overflow-hidden"><p className="max-w-2xl pb-5 text-sm leading-6 text-text">{faq.answer}</p></motion.div></div>;})}</div>
-        <p className="mt-6 text-center text-sm text-text">Still need a hand? <Link href="/contact" className="font-semibold text-heading underline decoration-border underline-offset-4">Contact the EthioGrowth team</Link>.</p>
+        <p className="mt-6 text-center text-sm text-text">Still need a hand? <Link href="/contact" className="font-semibold text-heading underline decoration-border underline-offset-4">Contact the Growix team</Link>.</p>
       </section>
 
       <footer className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 font-medium text-heading">
           <Icon name="star2" size={15} />
-          EthioGrowth
+          Growix
         </div>
         <div className="flex items-center gap-5">
           <Link href="/about" className="hover:text-heading">About</Link>

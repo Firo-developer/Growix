@@ -19,7 +19,7 @@ export default function ContactPage() {
         <div className="max-w-2xl">
           <p className="public-accent text-sm font-medium">Contact</p>
           <h1 className="mt-3 text-[42px] font-semibold leading-none sm:text-[58px]">Let&apos;s talk about your growth.</h1>
-          <p className="mt-5 text-[17px] leading-7 text-text">Questions about EthioGrowth, your workspace, or working together? Send a message and the team will get back to you.</p>
+          <p className="mt-5 text-[17px] leading-7 text-text">Questions about Growix, your workspace, or working together? Send a message and the team will get back to you.</p>
         </div>
         <div className="mt-12 grid gap-5 lg:grid-cols-[0.75fr_1.25fr]">
           <aside className="space-y-3">
@@ -28,7 +28,7 @@ export default function ContactPage() {
                 <Icon name="email1" size={18} />
               </span>
               <h2 className="mt-5 text-base font-semibold">Email us</h2>
-              <a href="mailto:hello@ethiogrowth.com" className="mt-1 block text-sm text-text hover:text-heading">hello@ethiogrowth.com</a>
+              <a href="mailto:hello@growix.com" className="mt-1 block text-sm text-text hover:text-heading">hello@growix.com</a>
             </div>
             <div className="rounded-2xl glass-card p-5 shadow-[0_10px_30px_rgba(25,27,31,0.035)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
               <span className="public-muted-bg flex h-10 w-10 items-center justify-center rounded-xl">

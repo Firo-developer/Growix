@@ -2,8 +2,8 @@ import {AuthExperience} from '@/components/auth/AuthExperience';
 import type {Metadata} from 'next';
 
 export const metadata: Metadata = {
-  title: 'Sign In — EthioGrowth AI',
-  description: 'Sign in or sign up to EthioGrowth AI.',
+  title: 'Sign In — Growix',
+  description: 'Sign in or sign up to Growix.',
 };
 
 export default function Login() {

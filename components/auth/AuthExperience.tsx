@@ -16,7 +16,7 @@ interface AuthExperienceProps {
 
 const copy: Record<AuthStep, {eyebrow: string; title: string; description: string}> = {
   login: {eyebrow: 'Welcome back', title: 'Pick up your growth plan.', description: 'Sign in to continue with your workspace.'},
-  signup: {eyebrow: 'Create your workspace', title: 'Start with a clear next step.', description: 'Set up your EthioGrowth account in a minute.'},
+  signup: {eyebrow: 'Create your workspace', title: 'Start with a clear next step.', description: 'Set up your Growix account in a minute.'},
   onboarding: {eyebrow: 'Business setup', title: 'Tell us about your business.', description: 'A few details now give your AI guidance the right local context.'},
 };
 
@@ -29,7 +29,7 @@ const onboardingSteps = [
   {title: 'Current challenges', description: 'Select the obstacles slowing your growth.'},
   {title: 'Marketing', description: 'Share the channels and investment you use today.'},
   {title: 'Brand identity', description: 'Set the tone your brand should use everywhere.'},
-  {title: 'AI preferences', description: 'Choose how EthioGrowth can be most helpful.'},
+  {title: 'AI preferences', description: 'Choose how Growix can be most helpful.'},
 ];
 
 // `compact` is only used by the onboarding wizard — the login/signup card keeps its original size and
@@ -369,11 +369,11 @@ export function AuthExperience({initialStep}: AuthExperienceProps) {
   return (
     <main className="min-h-screen bg-bg px-4 py-5 text-heading sm:px-6">
       <header className="mx-auto flex max-w-6xl items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5" aria-label="EthioGrowth home">
+        <Link href="/" className="flex items-center gap-2.5" aria-label="Growix home">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-heading">
             <Icon name="star2" size={16} className="text-bg" />
           </span>
-          <span className="text-sm font-semibold">EthioGrowth</span>
+          <span className="text-sm font-semibold">Growix</span>
         </Link>
         <div className="flex items-center gap-1">
           <ThemeToggle className="text-muted hover:text-heading" />
@@ -407,7 +407,7 @@ export function AuthExperience({initialStep}: AuthExperienceProps) {
             </button>
           </form>
           <p className="mt-5 text-center text-sm text-text">
-            {isSignup ? 'Already have an account?' : 'New to EthioGrowth?'}{' '}
+            {isSignup ? 'Already have an account?' : 'New to Growix?'}{' '}
             <Link href={isSignup ? '/login' : '/signup'} className="font-semibold text-heading underline decoration-border underline-offset-4">
               {isSignup ? 'Sign in' : 'Create an account'}
             </Link>
