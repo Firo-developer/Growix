@@ -34,17 +34,20 @@ const menuItems = [
     label: 'Download mobile App',
     icon: 'simcard',
     href: undefined,
+    destructive: false,
     onClick: () => toast.info('Mobile app download will be available soon.'),
   },
   {
     label: 'Settings',
     icon: 'setting',
     href: '/settings',
+    destructive: false,
   },
   {
     label: 'Help & Feedback',
     icon: 'info-circle',
     href: '/help',
+    destructive: false,
   },
   {
     label: 'Log out',
